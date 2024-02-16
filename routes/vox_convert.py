@@ -9,10 +9,8 @@ class VoxConverter(Resource):
         return jsonify("Hello")
 
     def post(self):
-    
         vox_file = request.files.get("vox")
         # print(vox_file.filename)
-
         palette_file = request.files.get("palette")
         # print(palette_file.stream)
 

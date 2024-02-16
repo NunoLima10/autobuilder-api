@@ -78,7 +78,10 @@ class VoxParser():
             elif name == 'MATT':
                     pass
             else:
-               return None
+               return False
+        return True
+            
+        
         
                
 

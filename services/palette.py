@@ -13,7 +13,7 @@ class Palette():
         self.image = Image.open(stream)
         self.image.convert("RGBA")
         width, height = self.image.size
-        return width != 256 or height != 1 
+        return width == 256 and height == 1 
 
     def get_colors(self) ->list [Color]:
         pixels = list(self.image.getdata())

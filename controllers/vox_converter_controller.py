@@ -1,5 +1,5 @@
 import tempfile
-from flask import send_file
+from flask import send_file,make_response
 
 from services.palette import Palette
 from services.vox_parser import VoxParser
@@ -8,12 +8,15 @@ class VoxConverterController:
     def __init__(self, vox_file, palette_file) -> None:
 
         self.palette = Palette(palette_file)
+        print(self.palette.is_valide)
         if not self.palette.is_valide:
-            self.response = "erro paleta"
+            self.response = make_response("A paleta enviada não é suportada",400)
+            return
             
         self.voxel = VoxParser(vox_file)
         if  not self.voxel.is_valid:
-            self.response = "erro vox"
+            self.response = make_response("O tipo de arquivo vox não é suportado",400)
+            return
             
         vox_converter = VoxConverter(self.palette,self.voxel)
         file_name = f"{vox_file.filename.split('.')[0]}.lua"
