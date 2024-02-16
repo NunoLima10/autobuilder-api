@@ -1,8 +1,8 @@
-from flask import jsonify
-from flask_restful import Resource, reqparse, request
+from flask import jsonify, make_response
+from flask_restful import Resource, request
+from controllers.vox_converter_controller import VoxConverterController
 
-request_put_args = reqparse.RequestParser()
-# request_put_args.add_argument("id_sender", type=int, help="id_sender is required.")
+
 
 class VoxConverter(Resource):
     def get(self):
@@ -11,11 +11,13 @@ class VoxConverter(Resource):
     def post(self):
     
         vox_file = request.files.get("vox")
-        print(vox_file.filename)
+        # print(vox_file.filename)
 
         palette_file = request.files.get("palette")
-        print(palette_file.stream)
+        # print(palette_file.stream)
 
-        return "On Progress"
+        controller = VoxConverterController(vox_file, palette_file)
+
+        return controller.response
        
         
