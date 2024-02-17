@@ -8,7 +8,7 @@ class VoxConverterController:
     def __init__(self, vox_file, palette_file) -> None:
 
         self.palette = Palette(palette_file)
-        print(self.palette.is_valide)
+        
         if not self.palette.is_valide:
             self.response = make_response("A paleta enviada não é suportada",400)
             return

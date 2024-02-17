@@ -68,5 +68,5 @@ class VoxConverter():
     
     def read_text(self, path: str) -> str:
         with open(path,"r") as file:
-            return file.readlines()
+            return "".join(file.readlines())    
         
