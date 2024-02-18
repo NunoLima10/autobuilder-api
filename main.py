@@ -24,4 +24,4 @@ if __name__=="__main__":
     api.add_resource(MiniWorldAutoBuilder,"/")
     api.add_resource(VoxConverter,"/converter")
     api.add_resource(Palette, "/palette")
-    app.run(host='0.0.0.0', port=5000,debug=True)
+    app.run(host='0.0.0.0', port=5000)
