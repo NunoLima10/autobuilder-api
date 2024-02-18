@@ -1,5 +1,5 @@
 
-from src.utils import block_color_data, color_distance
+from src.utils import block_color_data, color_distance,lua_base_code
 
 
 class VoxConverter():
@@ -11,10 +11,9 @@ class VoxConverter():
         positions = self.generate_position_table()
         blocks = self.generate_block_table()
         size = self.generate_size_table()
-        base_code_path = "static\code_templete\lua_base_code.txt"
-        base_code = self.read_text(base_code_path)
+        
 
-        lua_script =  f"{positions}\n{blocks}\n{size}\n{base_code}"
+        lua_script =  f"{positions}\n{blocks}\n{size}\n{lua_base_code}"
         return lua_script
 
 
