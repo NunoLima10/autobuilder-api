@@ -1,10 +1,9 @@
-
-from src.utils import block_color_data, color_distance,lua_base_code
+from src.utils import block_color_data, color_distance, lua_base_code
 
 
 class VoxConverter():
     def __init__(self, palette, vox_parser) -> str:
-        self.palette_colors = palette.get_colors()
+        self.palette_colors = palette.colors
         self.vox_parser = vox_parser
 
     def generate_lua_script(self) -> str:
@@ -12,7 +11,6 @@ class VoxConverter():
         blocks = self.generate_block_table()
         size = self.generate_size_table()
         
-
         lua_script =  f"{positions}\n{blocks}\n{size}\n{lua_base_code}"
         return lua_script
 

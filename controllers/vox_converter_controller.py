@@ -18,7 +18,7 @@ class VoxConverterController:
             self.response = make_response("O tipo de arquivo vox não é suportado",400)
             return
             
-        vox_converter = VoxConverter(self.palette,self.voxel)
+        vox_converter = VoxConverter(self.palette, self.voxel)
         file_name = f"{vox_file.filename.split('.')[0]}.lua"
         
         result = vox_converter.generate_lua_script()
