@@ -5,7 +5,7 @@ from PIL import Image
 Color = namedtuple("Color", "r g b a")
 
 class Palette():
-    def __init__(self, palette_file) -> None:
+    def __init__(self, palette_file=None) -> None:
         if palette_file:
             self.palette_file = palette_file
             self.is_valide = self.load_palette(self.palette_file.stream)

@@ -11,25 +11,23 @@ def color_distance(color_1, color_2) -> float:
 
     return (red_ajust*red_difference + green_ajust*green_difference + blue_ajust*blue_difference)**0.5
 
-lua_base_code = """
+effect_ids = """
 -- effects
 locate_effect = 1322
 success_sound = 10963
 warning_sound = 10956
 error_sound = 10960
-
-construction =  {
-    x = nil,
-    y = nil,
-    z = nil,
-    finished = false,
-    x_face = 1,
-    y_face = 3,
-    z_face = 2,
-    block_info_index = 4,
-    block_id_index = 1,
-    color_data_index = 2,
-}
+"""
+construction_info = """
+block_info_index = 4,
+block_id_index = 1,
+color_data_index = 2,
+finished = false,
+x_face = 1,
+y_face = 3,
+z_face = 2,
+"""
+send_info_msg = """
 _,host_uin = Player:getHostUin()
 
 Chat:sendSystemMsg("#W===============================", host_uin)
@@ -38,6 +36,9 @@ Chat:sendSystemMsg("#BMini World Auto Builder", host_uin)
 Chat:sendSystemMsg("#Wby #RNuno Lima/PlayCraft", host_uin)
 Chat:sendSystemMsg("#W===============================", host_uin)
 
+"""
+
+base_functions = """
 function set_position(x, y, z)
     if construction.x and construction.y and construction.z then
         Player:playMusic(host_uin,warning_sound,100,1,false)
@@ -51,34 +52,7 @@ function set_position(x, y, z)
     Player:playMusic(host_uin,success_sound,100,1,false)
     Chat:sendSystemMsg("#G⊙ #WPosition set ".." #Rx:#b"..construction.x.."#n #By: #b"..construction.y.."#n #Gz: #b"..construction.z, host_uin)
 end
-
-function build()
-    if not(construction.x and construction.y and construction.z) then
-        Chat:sendChat("#R⊗  #WUndefined position", 0)
-        Player:playMusic(host_uin,error_sound,100,1,false)
-        return
-    end
-    if construction.finished then 
-        Chat:sendSystemMsg("#R⊗ #WContruction already done!", host_uin)
-        Player:playMusic(host_uin,error_sound,100,1,false)
-        return
-    end
-    for i = 1, #blocks_positions do
-        --threadpool:wait(0.0000000000001)
-        local x_pos = construction.x + blocks_positions[i][construction.x_face]
-        local y_pos = construction.y + blocks_positions[i][construction.y_face]
-        local z_pos = construction.z + blocks_positions[i][construction.z_face]
-        local block_id =  blocks_pallete[blocks_positions[i][construction.block_info_index]][construction.block_id_index]
-        local color_data = blocks_pallete[blocks_positions[i][construction.block_info_index] ][construction.color_data_index]        
-        Block:setBlockAll(x_pos, y_pos, z_pos, block_id, color_data)
-    end
-
-    construction.finished = true
-    World:stopEffectOnPosition(construction.x,construction.y - 1,construction.z,locate_effect)
-    Player:playMusic(host_uin,success_sound,100,1,false)
-    Chat:sendSystemMsg("#G⊙ #WConstrution completed!", host_uin)
-end
-
+    
 function clean()
    if not construction.finished then return end
    for i = 1, #blocks_positions do
@@ -96,7 +70,7 @@ end
 function reset()
     if construction.finished then
         Player:playMusic(host_uin,error_sound,100,1,false)
-        Chat:sendSystemMsg("#R⊗ #WContruction already done!", host_uin)
+        Chat:sendSystemMsg("#R⊗ #WConstruction already done!", host_uin)
         return 
     end
     World:stopEffectOnPosition(construction.x,construction.y - 1,construction.z,locate_effect)
@@ -122,16 +96,16 @@ function run_command(input_text)
         reset = reset,
         help = help
     }
-    local comand = {
+    local command = {
             prefix = input_text:sub(0,1),
             option = input_text:sub(2,input_text:len())
     }
-    if comand.prefix ~= "/" then
+    if command.prefix ~= "/" then
         return
     end
-    for key, comand_funtion in pairs(commands) do
-        if key == comand.option then
-            comand_funtion()
+    for key, command_function in pairs(commands) do
+        if key == command.option then
+            command_function()
         end
     end
 end
@@ -145,7 +119,7 @@ function click_event(event)
 end 
 
 
-function chat_input_evenft(event)
+function chat_input_event(event)
     if event.eventobjid ~= host_uin then
         return
     end
@@ -154,10 +128,73 @@ function chat_input_evenft(event)
 
 end
 ScriptSupportEvent:registerEvent([=[Player.ClickBlock]=], click_event)
-ScriptSupportEvent:registerEvent([=[Player.InputContent]=],  chat_input_evenft)
+ScriptSupportEvent:registerEvent([=[Player.InputContent]=],  chat_input_event)
 
 
 """
+
+def generate_lua_base_code(build_options):
+    base_code = effect_ids
+    construction = "construction = {"
+    build_location = """
+x = nil,
+y = nil,
+z = nil,
+"""
+    
+    if build_options["location"]: 
+        build_location = f"""
+x = {build_options["location"].coordinates[0]},
+y = {build_options["location"].coordinates[2]},
+z = {build_options["location"].coordinates[1]},
+"""
+    construction += build_location
+    
+
+    block_place = """
+    local block_id =  blocks_palette[blocks_positions[i][construction.block_info_index]][construction.block_id_index]
+    local color_data = blocks_palette[blocks_positions[i][construction.block_info_index] ][construction.color_data_index]        
+    Block:setBlockAll(x_pos, y_pos, z_pos, block_id, color_data)
+    """
+
+
+    fill_block = "fill_block_id = nil,"
+    if build_options["block"]:
+        fill_block = f"fill_block_id = {build_options['block'].id},"
+        block_place = "Block:placeBlock(construction.fill_block_id, x_pos, y_pos, z_pos,0)"
+
+    construction += fill_block
+    construction += construction_info + "}"
+
+    build_function = f"""
+function build()
+    if not(construction.x and construction.y and construction.z) then
+        Chat:sendChat("#R⊗  #WUndefined position", 0)
+        Player:playMusic(host_uin,error_sound,100,1,false)
+        return
+    end
+    if construction.finished then 
+        Chat:sendSystemMsg("#R⊗ #WConstruction already done!", host_uin)
+        Player:playMusic(host_uin,error_sound,100,1,false)
+        return
+    end
+    for i = 1, #blocks_positions do
+        --threadpool:wait(0.0000000000001)
+        local x_pos = construction.x + blocks_positions[i][construction.x_face]
+        local y_pos = construction.y + blocks_positions[i][construction.y_face]
+        local z_pos = construction.z + blocks_positions[i][construction.z_face]
+        {block_place}
+    end
+    construction.finished = true
+    World:stopEffectOnPosition(construction.x,construction.y - 1,construction.z,locate_effect)
+    Player:playMusic(host_uin,success_sound,100,1,false)
+    Chat:sendSystemMsg("#G⊙ #WConstruction completed!", host_uin)
+    end
+    """
+
+    return base_code + construction + send_info_msg + build_function + base_functions 
+    
+
 Block = namedtuple("Block","block_id color_data r g b")
 block_color_data =  [
     Block(666, 0, 255, 212, 157),
