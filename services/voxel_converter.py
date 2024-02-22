@@ -1,21 +1,21 @@
-
-from src.utils import block_color_data, color_distance,lua_base_code
+from src.utils import block_color_data, color_distance, generate_lua_base_code
 
 
 class VoxConverter():
-    def __init__(self, palette, vox_parser) -> str:
-        self.palette_colors = palette.get_colors()
+    def __init__(self,vox_parser, build_options) -> str:
+        self.build_options = build_options
         self.vox_parser = vox_parser
 
     def generate_lua_script(self) -> str:
         positions = self.generate_position_table()
-        blocks = self.generate_block_table()
         size = self.generate_size_table()
+        lua_base_code = generate_lua_base_code(self.build_options)
+
+        if self.build_options["block"]:
+            return f"{positions}\n{size}\n{lua_base_code}"
         
-
-        lua_script =  f"{positions}\n{blocks}\n{size}\n{lua_base_code}"
-        return lua_script
-
+        blocks = self.generate_block_table() 
+        return f"{positions}\n{blocks}\n{size}\n{lua_base_code}"
 
     def generate_position_table(self) -> str:
         position_table = 'blocks_positions = {'
@@ -31,7 +31,7 @@ class VoxConverter():
         block_list = []
         processed_colors = {}
 
-        for color in self.palette_colors:
+        for color in self.build_options["palette"].colors:
             if str(color) not in processed_colors:
                 block = block_color_data[0]
                 mim_delta_E = color_distance((color.r,color.g,color.b),(block.r,block.g,block.b))
@@ -53,7 +53,7 @@ class VoxConverter():
 
     def generate_block_table(self) -> str:
         block_list = self.get_block_list()
-        blocks_table = 'blocks_pallete = {'
+        blocks_table = 'blocks_palette = {'
 
         for block in block_list:
             block_line = '{'+f'{block.block_id},{block.color_data}'+'}'

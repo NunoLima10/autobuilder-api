@@ -1,20 +1,19 @@
-from flask import jsonify, make_response
 from flask_restful import Resource, request
 from controllers.vox_converter_controller import VoxConverterController
 
 
-
 class VoxConverter(Resource):
-    def get(self):
-        return jsonify("Hello")
-
     def post(self):
         vox_file = request.files.get("vox")
-        # print(vox_file.filename)
         palette_file = request.files.get("palette")
-        # print(palette_file.stream)
-
-        controller = VoxConverterController(vox_file, palette_file)
+        build_location = None
+        # build_location = [int(value) for value in request.form.getlist("location[]")[0].split(',')]
+       
+        
+        build_location = request.form.getlist("location[]")
+        block_id = request.form.get("block")
+     
+        controller = VoxConverterController(vox_file, palette_file, block_id, build_location)
 
         return controller.response
        
