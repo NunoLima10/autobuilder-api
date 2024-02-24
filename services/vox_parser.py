@@ -15,34 +15,33 @@ class VoxParser():
        
     
     def load_voxel_data(self) -> bool:
+        vox = self.voxel_file.stream
         current_frame = 0
         load_frame = 0
-        vox = self.voxel_file.stream
 
         if not struct.unpack('<4c', vox.read(4)) == (b'V', b'O', b'X', b' '):
-            return False
+            return
 
         self.version = struct.unpack('<i', vox.read(4))
 
         if not struct.unpack('<4c', vox.read(4)) == (b'M', b'A', b'I', b'N'):
-            return False
+           return
             
         N, M = struct.unpack('<ii', vox.read(8))
         if N != 0:
-            return False
+           return
 
         while True:
             try:
                 *name, s_self, s_child = struct.unpack('<4cii', vox.read(12))
                 if s_child != 0:
-                    return False
+                    return
 
                 name = b''.join(name).decode('utf-8') 
 
             except struct.error:
                 # end of file
                 break
-
             if name == 'PACK':
                 # number of models
                 num_models, = struct.unpack('<i', vox.read(4))
@@ -69,18 +68,17 @@ class VoxParser():
                     vox.read(s_self)
                     current_frame += 1
             elif name == 'RGBA':
-                pass
                 # palette
-                # for col in range(256):
-                #     color_data = struct.unpack('<4B', vox.read(4))
-                #     r, g, b, a = color_data
+                for col in range(256):
+                    color_data = struct.unpack('<4B', vox.read(4))
+                    r, g, b, a = color_data
                     #self.palette.append(Color(r, g, b, a))
             elif name == 'MATT':
                     pass
             else:
-               return False
-        return True
-            
+                # Any other chunk, we don't know how to handle
+                return
+        return True     
         
         
                
