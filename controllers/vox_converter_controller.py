@@ -1,11 +1,15 @@
+import io
 import tempfile
-from flask import send_file,make_response
 
-from services.palette import Palette
-from services.vox_parser import VoxParser
+from flask import make_response, send_file
+
 from services.block import Block
 from services.location import Location
+from services.palette import Palette
+from services.vox_parser import VoxParser
 from services.voxel_converter import VoxConverter
+
+
 class VoxConverterController:
     def __init__(self, vox_file, palette_file = None, block_id= None, location= None) -> None:
         
@@ -41,10 +45,11 @@ class VoxConverterController:
         
         result = vox_converter.generate_lua_script()
 
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(result.encode("utf-8"))
+        buffer = io.BytesIO()
+        buffer.write( result.encode('utf-8'))
+        buffer.seek(0)  
 
-        self.response = send_file(tmp_file.name, mimetype='text/plain', as_attachment=True, download_name=file_name)
+        self.response = send_file(buffer, mimetype='text/plain', as_attachment=True, download_name=file_name)
        
 
 
