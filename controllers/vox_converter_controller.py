@@ -1,7 +1,7 @@
 import io
 import tempfile
 
-from flask import make_response, send_file
+from flask import make_response, send_file, jsonify
 
 from services.block import Block
 from services.location import Location
@@ -41,15 +41,16 @@ class VoxConverterController:
                 return
  
         vox_converter = VoxConverter(self.voxel, self.build_options)
-        file_name = f"{vox_file.filename.split('.')[0]}.lua"
+        # file_name = f"{vox_file.filename.split('.')[0]}.lua"
         
         result = vox_converter.generate_lua_script()
+        
+        # buffer = io.BytesIO()
+        # buffer.write( result.encode('utf-8'))
+        # buffer.seek(0) 
+        # self.response = send_file(buffer, mimetype='text/plain', as_attachment=True, download_name=file_name)
 
-        buffer = io.BytesIO()
-        buffer.write( result.encode('utf-8'))
-        buffer.seek(0)  
-
-        self.response = send_file(buffer, mimetype='text/plain', as_attachment=True, download_name=file_name)
+        self.response = make_response(result,200)
        
 
 

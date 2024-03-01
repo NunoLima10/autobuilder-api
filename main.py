@@ -14,6 +14,7 @@ api = Api(app)
 load_dotenv()
 
 port = os.getenv("PORT") or 5000
+app.config['DEBUG'] = os.environ.get('FLASK_DEBUG') or 1
         
 class MiniWorldAutoBuilder(Resource):
      def get(self):
@@ -24,4 +25,4 @@ if __name__=="__main__":
     api.add_resource(MiniWorldAutoBuilder,"/")
     api.add_resource(VoxConverter,"/converter")
     api.add_resource(Palette, "/palette")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=port,debug=False)

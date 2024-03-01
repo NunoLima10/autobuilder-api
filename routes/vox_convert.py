@@ -14,6 +14,7 @@ class VoxConverter(Resource):
         block_id = request.form.get("block")
      
         controller = VoxConverterController(vox_file, palette_file, block_id, build_location)
+        print("Convertido")
 
         return controller.response
        
