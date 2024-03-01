@@ -1,7 +1,7 @@
 import io
 import tempfile
 
-from flask import make_response, send_file
+from flask import make_response, send_file, jsonify
 
 from services.block import Block
 from services.location import Location
@@ -15,7 +15,7 @@ class VoxConverterController:
         
         self.voxel = VoxParser(vox_file)
         if not self.voxel.is_valid:
-            self.response = make_response("O tipo de arquivo vox não é suportado",400)
+            self.response = make_response("server-error-voxel-type-unsupported-notification",400)
             return
         
         self.build_options = {"palette":None,"block":None ,"location": None}
@@ -23,7 +23,7 @@ class VoxConverterController:
         if palette_file: 
             self.build_options["palette"] = Palette(palette_file)
             if not self.build_options["palette"].is_valide:
-                self.response = make_response("A paleta não é valido",400)
+                self.response = make_response("server-error-palette-unsupported-notification",400)
                 return
         else:
             self.build_options["palette"] = Palette()
@@ -31,25 +31,26 @@ class VoxConverterController:
         if block_id:
             self.build_options["block"] = Block(block_id)
             if not self.build_options["block"].is_valid:
-                self.response = make_response("A Block id não é valido",400)
+                self.response = make_response("server-error-block-id-invalid-notification",400)
                 return
             
         if location:
             self.build_options["location"] = Location(location)
             if not self.build_options["location"].is_valid:
-                self.response = make_response("O Local de construção não é valido",400)
+                self.response = make_response("server-error-location-not-valid-notification",400)
                 return
  
         vox_converter = VoxConverter(self.voxel, self.build_options)
-        file_name = f"{vox_file.filename.split('.')[0]}.lua"
+        # file_name = f"{vox_file.filename.split('.')[0]}.lua"
         
         result = vox_converter.generate_lua_script()
+        
+        # buffer = io.BytesIO()
+        # buffer.write( result.encode('utf-8'))
+        # buffer.seek(0) 
+        # self.response = send_file(buffer, mimetype='text/plain', as_attachment=True, download_name=file_name)
 
-        buffer = io.BytesIO()
-        buffer.write( result.encode('utf-8'))
-        buffer.seek(0)  
-
-        self.response = send_file(buffer, mimetype='text/plain', as_attachment=True, download_name=file_name)
+        self.response = make_response(result,200)
        
 
 
